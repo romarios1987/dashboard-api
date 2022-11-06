@@ -1,27 +1,25 @@
+import 'reflect-metadata';
 import { Server } from 'http';
+import { injectable, inject } from 'inversify';
 import express, { Express } from 'express';
-import { LoggerService } from './logger/logger.service';
 import { UserController } from './users/user.controller';
 import { ExceptionFilter } from './errors/exception.filter';
+import { ILogger } from './logger/logger.interface';
+import { TYPES } from './types';
 
+@injectable()
 export class App {
 	app: Express;
 	server: Server;
 	port: number;
-	logger: LoggerService;
-	userController: UserController;
-	exceptionFilter: ExceptionFilter;
 
 	constructor(
-		logger: LoggerService,
-		userController: UserController,
-		exceptionFilter: ExceptionFilter,
+		@inject(TYPES.ILogger) private loggerService: ILogger,
+		@inject(TYPES.IUserController) private userController: UserController,
+		@inject(TYPES.ExceptionFilter) private exceptionFilter: ExceptionFilter,
 	) {
 		this.app = express();
 		this.port = 8000;
-		this.logger = logger;
-		this.userController = userController;
-		this.exceptionFilter = exceptionFilter;
 	}
 
 	useRoutes(): void {
@@ -36,6 +34,6 @@ export class App {
 		this.useRoutes();
 		this.useExceptionFilters();
 		this.server = this.app.listen(this.port);
-		this.logger.log(`The server is running on http://localhost:${this.port}`);
+		this.loggerService.log(`The server is running on http://localhost:${this.port}`);
 	}
 }
